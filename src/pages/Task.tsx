@@ -1,5 +1,5 @@
 // src/pages/Tasks.tsx
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import type { FC } from 'react';
 import { Button, Typography, Card, CardContent } from '@mui/material';
 import { getTasks, createTask, toggleTaskDone, deleteTask } from '../api/task';
@@ -16,26 +16,29 @@ const Tasks: FC = () => {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getTasks();
       setTasks(data);
-    } catch (err: any) {
-      if (err.status === 401) {
+    } catch (err: unknown) {
+      const status = err && typeof err === 'object' && 'status' in err ? Number((err as { status?: number }).status) : undefined;
+      const message = err && typeof err === 'object' && 'message' in err ? String((err as { message?: string }).message) : 'Error al cargar tareas';
+
+      if (status === 401) {
         logout();
         navigate('/login');
       } else {
-        setError(err.message || 'Error al cargar tareas');
+        setError(message || 'Error al cargar tareas');
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [logout, navigate]);
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
   const handleCreate = async (task: { title: string }) => {
     const newTask = await createTask(task);
