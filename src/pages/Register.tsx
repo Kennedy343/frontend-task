@@ -1,7 +1,7 @@
 // src/pages/Register.tsx
 // Corregido
 import { useState, useContext } from 'react';
-import type { FC } from 'react';
+import type { FC, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Card, CardContent, TextField, Button, Typography } from '@mui/material';
@@ -15,7 +15,7 @@ const Register: FC = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const res = await fetch('http://localhost:3000/auth/register', {
@@ -30,8 +30,8 @@ const Register: FC = () => {
       } else {
         setError(data.message || 'Error en registro');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error en registro');
     }
   };
 

@@ -1,6 +1,6 @@
 // src/pages/Login.tsx
 import { useState, useContext } from 'react';
-import type { FC } from 'react';
+import type { FC, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Card, CardContent, TextField, Button, Typography } from '@mui/material';
@@ -13,7 +13,7 @@ const Login: FC = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const res = await fetch('http://localhost:3000/auth/login', {
@@ -26,14 +26,13 @@ const Login: FC = () => {
       console.log('Respuesta backend login:', data);
 
       if (res.ok) {
-        // IMPORTANTE: tu backend devuelve access_token
         login(data.access_token, data.user as User);
         navigate('/tasks');
       } else {
         setError(data.message || 'Error en login');
       }
-    } catch (err: any) {
-      setError(err.message || 'Error en login');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error en login');
     }
   };
 
